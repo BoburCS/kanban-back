@@ -1,11 +1,18 @@
-import app from "./app"; 
-import env from "./validateEnv";
 import mongoose from "mongoose";
+import app from "./app";
+import env from "./validateEnv";
 
 const port = env.PORT;
+const uri = env.DATABASE_URL;
 
 mongoose
-  .connect(env.DATABASE_URL)
+  .connect(uri, {
+    serverApi: {
+      version: "1",
+      strict: true,
+      deprecationErrors: true,
+    },
+  })
   .then(() => {
     console.log("Connected to database");
     app.listen(port, () => {

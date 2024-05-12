@@ -4,7 +4,9 @@
   "description": "Backend for my kanban todo app",
   "main": "src/server.ts",
   "scripts": {
-    "start": "nodemon src/server.ts"
+    "start": "nodemon src/server.ts",
+    "build": "tsc",
+    "startProd": "node dist/server.js"
   },
   "keywords": [],
   "author": "Bobby",
@@ -14,6 +16,7 @@
     "dotenv": "^16.4.5",
     "envalid": "^8.0.0",
     "express": "^4.19.2",
+    "mongodb": "^6.6.1",
     "mongoose": "^8.3.4",
     "morgan": "^1.10.0"
   },

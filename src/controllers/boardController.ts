@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import Board from "../models/Board";
+import Task from "../models/Task";
 
 type BoardProps = {
   title?: string;
@@ -9,11 +10,31 @@ type BoardProps = {
 // GET | Get all boards | "/boards"
 export const getAllBoards: RequestHandler = async (req, res) => {
   try {
-    const boards = await Board.find();
+    const boards = await Board.find().select("-__v, -statuses");
 
     res.status(200).json({ boards });
   } catch (err) {
     res.status(500).json({ err: "Error occured while getting boards" });
+  }
+};
+
+// GET | Get a board | "/boards/:boardId"
+export const getBoard: RequestHandler<{ boardId: string }> = async (req, res) => {
+  try {
+    const { boardId } = req.params;
+
+    if (!boardId) {
+      return res.status(400).json({ err: "Board ID is required" });
+    }
+
+    const board = await Board.findById(boardId);
+    if (!board) {
+      return res.status(404).json({ err: "Board not found" });
+    }
+
+    res.status(200).json({ board });
+  } catch (err) {
+    res.status(500).json({ err: "Error occured while getting the board" });
   }
 };
 
@@ -41,17 +62,22 @@ export const createBoard: RequestHandler<
   }
 };
 
-// DELETE | Delete a board | "/boards/:id"
-export const deleteBoard: RequestHandler<{ id: string }> = async (req, res) => {
+// DELETE | Delete a board | "/boards/:boardId"
+export const deleteBoard: RequestHandler<{ boardId: string }> = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { boardId } = req.params;
 
-    const board = await Board.findById(id).exec();
+    if (!boardId) {
+      return res.status(400).json({ err: "Board ID is required" });
+    }
+
+    const board = await Board.findById(boardId).exec();
     if (!board) {
       return res.status(404).json({ err: "Board not found" });
     }
 
-    await board.deleteOne({ _id: id });
+    await Task.deleteMany({ boardId: boardId });
+    await board.deleteOne({ _id: boardId });
 
     res.status(200).json({ message: "Board deleted successfully" });
   } catch (err) {
@@ -59,21 +85,25 @@ export const deleteBoard: RequestHandler<{ id: string }> = async (req, res) => {
   }
 };
 
-// PUT | Update a board | "/boards/:id"
+// PUT | Update a board | "/boards/:boardId"
 export const updateBoard: RequestHandler<
-  { id: string },
+  { boardId: string },
   unknown,
   BoardProps
 > = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { boardId } = req.params;
     const { title, statuses } = req.body;
+
+    if (!boardId) {
+      return res.status(400).json({ err: "Board ID is required" });
+    }
 
     if (!title && !statuses) {
       return res.status(400).json({ err: "Please provide title or statuses" });
     }
 
-    const board = await Board.findById(id);
+    const board = await Board.findById(boardId).exec();
     if (!board) {
       return res.status(404).json({ err: "Board not found" });
     }

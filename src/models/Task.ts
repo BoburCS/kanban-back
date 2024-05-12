@@ -1,11 +1,5 @@
 import { Schema, InferSchemaType, model } from "mongoose";
-
-const SubTaskSchema = new Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-});
+import { SubTaskSchema } from "./SubTask";
 
 const TaskSchema = new Schema({
   title: {

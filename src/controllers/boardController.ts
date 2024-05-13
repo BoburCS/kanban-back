@@ -1,6 +1,5 @@
 import { RequestHandler } from "express";
-import Board from "../models/Board";
-import Task from "../models/Task";
+import { BoardModel, TaskModel } from "../models";
 
 type BoardProps = {
   title?: string;
@@ -10,7 +9,7 @@ type BoardProps = {
 // GET | Get all boards | "/boards"
 export const getAllBoards: RequestHandler = async (req, res) => {
   try {
-    const boards = await Board.find().select("-__v, -statuses");
+    const boards = await BoardModel.find().select("-__v, -statuses");
 
     res.status(200).json({ boards });
   } catch (err) {
@@ -27,7 +26,7 @@ export const getBoard: RequestHandler<{ boardId: string }> = async (req, res) =>
       return res.status(400).json({ err: "Board ID is required" });
     }
 
-    const board = await Board.findById(boardId);
+    const board = await BoardModel.findById(boardId);
     if (!board) {
       return res.status(404).json({ err: "Board not found" });
     }
@@ -51,7 +50,7 @@ export const createBoard: RequestHandler<
       return res.status(400).json({ err: "Please provide title and statuses" });
     }
 
-    const newBoard = new Board({ title, statuses });
+    const newBoard = new BoardModel({ title, statuses });
     await newBoard.save();
 
     res
@@ -71,12 +70,12 @@ export const deleteBoard: RequestHandler<{ boardId: string }> = async (req, res)
       return res.status(400).json({ err: "Board ID is required" });
     }
 
-    const board = await Board.findById(boardId).exec();
+    const board = await BoardModel.findById(boardId).exec();
     if (!board) {
       return res.status(404).json({ err: "Board not found" });
     }
 
-    await Task.deleteMany({ boardId: boardId });
+    await TaskModel.deleteMany({ boardId: boardId });
     await board.deleteOne({ _id: boardId });
 
     res.status(200).json({ message: "Board deleted successfully" });
@@ -103,7 +102,7 @@ export const updateBoard: RequestHandler<
       return res.status(400).json({ err: "Please provide title or statuses" });
     }
 
-    const board = await Board.findById(boardId).exec();
+    const board = await BoardModel.findById(boardId).exec();
     if (!board) {
       return res.status(404).json({ err: "Board not found" });
     }

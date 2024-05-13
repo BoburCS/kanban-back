@@ -1,6 +1,5 @@
 import { RequestHandler } from "express";
-import Task from "../models/Task";
-import { SubTask } from "../models/SubTask";
+import { TaskModel, SubTask } from "../models";
 
 declare type SubTaskProps = {
   title?: string;
@@ -27,7 +26,7 @@ export const getAllTasks: RequestHandler<TaskBoardId> = async (req, res) => {
       return res.status(400).json({ err: "Board ID is required" });
     }
 
-    const tasks = await Task.find({ boardId });
+    const tasks = await TaskModel.find({ boardId });
     res.status(200).json({ tasks });
   } catch (err) {
     res.status(500).json({ err: "Error occured while getting tasks" });
@@ -43,7 +42,7 @@ export const getTask: RequestHandler<{ taskId: string }> = async (req, res) => {
       return res.status(400).json({ err: "Task ID is required" });
     }
 
-    const task = await Task.findById(taskId).exec();
+    const task = await TaskModel.findById(taskId).exec();
 
     if (!task) {
       return res.status(404).json({ err: "Task not found" });
@@ -74,7 +73,7 @@ export const createTask: RequestHandler<
       return res.status(400).json({ err: "All fields are required" });
     }
 
-    const newTask = new Task({ title, description, subTasks, status, boardId });
+    const newTask = new TaskModel({ title, description, subTasks, status, boardId });
     await newTask.save();
 
     res
@@ -97,7 +96,7 @@ export const deleteTask: RequestHandler<{ taskId: string }> = async (
       return res.status(400).json({ err: "Task ID is required" });
     }
 
-    const task = await Task.findById(taskId).exec();
+    const task = await TaskModel.findById(taskId).exec();
     if (!task) {
       return res.status(404).json({ err: "Task not found" });
     }
@@ -130,7 +129,7 @@ export const updateTask: RequestHandler<
       });
     }
 
-    const task = await Task.findById(taskId).exec();
+    const task = await TaskModel.findById(taskId).exec();
 
     if (!task) {
       return res.status(404).json({ err: "Task not found" });
@@ -169,7 +168,7 @@ export const updateSubTask: RequestHandler<
       });
     }
 
-    const task = await Task.findById(taskId).exec();
+    const task = await TaskModel.findById(taskId).exec();
     if (!task) {
       return res.status(404).json({ err: "Task not found" });
     }
